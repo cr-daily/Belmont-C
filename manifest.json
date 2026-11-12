@@ -1,0 +1,24 @@
+{
+  "name": "Belmont C.",
+  "short_name": "Belmont C.",
+  "description": "สถาบันการศึกษาแห่งเหล่าชนชั้นสูงและราชวงศ์ Belmont Concordia Royal Academy",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FFF9FA",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dp6k1rwj/image/upload/w_192,h_192,c_fill/v1794483770/file_00000000a1cc82118c32b6b1b3e0fa76.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://res.cloudinary.com/dp6k1rwj/image/upload/w_512,h_512,c_fill/v1794483770/file_00000000a1cc82118c32b6b1b3e0fa76.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
