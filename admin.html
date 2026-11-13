@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belmont C. - Admin</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A1D4E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dp6k1rwj/image/upload/v1794483770/file_00000000a1cc82118c32b6b1b3e0fa76.png">
+
+    <!-- Google Fonts & Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- นำเข้าไฟล์ตั้งค่ากลาง -->
+    <script src="supabase-config.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        royal: {
+                            50: '#F4F7FB',
+                            100: '#E8EEF7',
+                            200: '#C8D6EB',
+                            300: '#9CB4DB',
+                            400: '#688BC7',
+                            500: '#3B64B0',
+                            600: '#1D438A',
+                            700: '#143069',
+                            800: '#0E2452',
+                            900: '#0A1D4E', // Royal Sapphire Navy
+                            950: '#050F2B',
+                        },
+                        silver: {
+                            100: '#F8FAFC',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                        }
+                    },
+                    fontFamily: { 
+                        sans: ['Prompt', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: radial-gradient(circle at top, #F4F7FB 0%, #E2E8F0 100%);
+            color: #0A1D4E; 
+            min-height: 100vh; 
+        }
+        .royal-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1.5px solid #C8D6EB;
+            box-shadow: 0 10px 30px -10px rgba(10, 29, 78, 0.1);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start p-4 md:p-8 pb-20">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-2xl space-y-4">
+        
+        <!-- Header Nav -->
+        <div class="border-b border-royal-200 pb-3 flex items-center justify-between">
+            <div class="space-y-0.5">
+                <button onclick="location.href='home.html'" class="inline-flex items-center space-x-1 text-xs font-bold text-royal-900 bg-royal-100 hover:bg-royal-200 px-3 py-1.5 rounded-xl transition border border-royal-200 shadow-sm">
+                    <span>◀ กลับหน้าหลักสถาบัน</span>
+                </button>
+                <h1 class="text-base sm:text-lg font-extrabold text-royal-900 font-serif pt-1">🛡️ Admin (ระบบผู้ดูแลระบบสถาบัน)</h1>
+            </div>
+            <span class="bg-royal-900 text-white text-[9px] font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">ADMIN</span>
+        </div>
+
+        <!-- Description Box -->
+        <div class="royal-card p-4 rounded-3xl space-y-1 shadow-sm">
+            <h2 class="text-xs font-bold text-royal-900 font-serif">⚙️ เมนูจัดการระบบหลังบ้านเบลมอนต์</h2>
+            <p class="text-[10px] text-gray-500">เลือกโมดูลที่ต้องการจัดการข้อมูล ข้อมูลทั้งหมดจะถูกซิงค์ตรงกับฐานข้อมูล Supabase ทันที</p>
+        </div>
+
+        <!-- Admin Navigation Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <!-- จัดการ Store -->
+            <div onclick="location.href='admin-store.html'" class="royal-card p-4 rounded-3xl flex items-center space-x-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm hover:border-royal-400">
+                <div class="w-10 h-10 rounded-2xl bg-royal-100 text-royal-900 flex items-center justify-center text-lg shadow-inner shrink-0 border border-royal-200">🛍️</div>
+                <div class="space-y-0.5">
+                    <h3 class="font-bold text-xs text-royal-900 font-serif">จัดการ Store (ร้านค้า)</h3>
+                    <p class="text-[10px] text-gray-500">เพิ่ม/ลบ สินค้าทั่วไป และไอเท็มฟื้นฟูพลังงาน/อาหาร</p>
+                </div>
+            </div>
+
+            <!-- จัดการผู้เล่น (Users) -->
+            <div onclick="location.href='admin-users.html'" class="royal-card p-4 rounded-3xl flex items-center space-x-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm hover:border-royal-400">
+                <div class="w-10 h-10 rounded-2xl bg-royal-100 text-royal-900 flex items-center justify-center text-lg shadow-inner shrink-0 border border-royal-200">👥</div>
+                <div class="space-y-0.5">
+                    <h3 class="font-bold text-xs text-royal-900 font-serif">จัดการผู้เล่น (Users)</h3>
+                    <p class="text-[10px] text-gray-500">ตรวจสอบรายชื่อและข้อมูลโปรไฟล์ของผู้เล่นในระบบ</p>
+                </div>
+            </div>
+
+            <!-- จัดการการเรียนรู้ (Learnify) -->
+            <div onclick="location.href='admin-skill.html'" class="royal-card p-4 rounded-3xl flex items-center space-x-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm hover:border-royal-400">
+                <div class="w-10 h-10 rounded-2xl bg-royal-100 text-royal-900 flex items-center justify-center text-lg shadow-inner shrink-0 border border-royal-200">📚</div>
+                <div class="space-y-0.5">
+                    <h3 class="font-bold text-xs text-royal-900 font-serif">จัดการ Learnify (การเรียนรู้)</h3>
+                    <p class="text-[10px] text-gray-500">เพิ่ม/ลบ หลักสูตร General Skill และ University Skill</p>
+                </div>
+            </div>
+
+            <!-- จัดการงาน (Career) -->
+            <div onclick="location.href='admin-career.html'" class="royal-card p-4 rounded-3xl flex items-center space-x-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm hover:border-royal-400">
+                <div class="w-10 h-10 rounded-2xl bg-royal-100 text-royal-900 flex items-center justify-center text-lg shadow-inner shrink-0 border border-royal-200">💼</div>
+                <div class="space-y-0.5">
+                    <h3 class="font-bold text-xs text-royal-900 font-serif">จัดการ Career (ระบบงาน)</h3>
+                    <p class="text-[10px] text-gray-500">จัดการรายชื่องานหลักประจำ และงานเสริมรับจ้างทั่วไป</p>
+                </div>
+            </div>
+
+            <!-- จัดการที่อยู่อาศัย (Estate) -->
+            <div onclick="location.href='admin-estate.html'" class="royal-card p-4 rounded-3xl flex items-center space-x-3 cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm hover:border-royal-400 sm:col-span-2">
+                <div class="w-10 h-10 rounded-2xl bg-royal-100 text-royal-900 flex items-center justify-center text-lg shadow-inner shrink-0 border border-royal-200">🏡</div>
+                <div class="space-y-0.5">
+                    <h3 class="font-bold text-xs text-royal-900 font-serif">จัดการ Estate (ที่อยู่อาศัย)</h3>
+                    <p class="text-[10px] text-gray-500">สร้างบ้าน คอนโด หรืออพาร์ตเมนต์ พร้อมระบุราคาและจำนวนยูนิตห้องพัก</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Modal แจ้งเตือน -->
+    <div id="custom-modal" class="fixed inset-0 bg-royal-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border-2 border-royal-200 max-w-sm w-full p-6 text-center transform transition-all scale-95 opacity-0 duration-200" id="modal-box">
+            <div id="modal-icon" class="w-16 h-16 bg-royal-100 text-royal-900 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner border border-royal-200">⚜️</div>
+            <h3 id="modal-title" class="text-lg font-bold text-royal-900 mb-2 font-serif">แจ้งเตือนระบบ</h3>
+            <p id="modal-message" class="text-sm text-gray-600 mb-6">ข้อความแจ้งเตือน...</p>
+            <button onclick="closeModal()" class="bg-royal-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-royal-800 transition w-full shadow-md">ตกลง</button>
+        </div>
+    </div>
+
+    <script>
+        function showModal(title, message, icon = '⚜️', callback = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerText = icon;
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
+            window.modalCallback = callback;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                if (window.modalCallback) window.modalCallback();
+            }, 200);
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
+
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (error || !profile || profile.role !== 'admin') {
+                showModal("Access Denied", "คุณไม่มีสิทธิ์เข้าถึงหน้าผู้ดูแลระบบนี้", "🚫", () => {
+                    window.location.href = 'home.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
