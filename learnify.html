@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belmont C. - Learnify</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A1D4E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dp6k1rwj/image/upload/v1794483770/file_00000000a1cc82118c32b6b1b3e0fa76.png">
+
+    <!-- Google Fonts & Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- นำเข้าไฟล์ตั้งค่ากลาง -->
+    <script src="supabase-config.js"></script>
+    <script src="cloudinary-config.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        royal: {
+                            50: '#F4F7FB',
+                            100: '#E8EEF7',
+                            200: '#C8D6EB',
+                            300: '#9CB4DB',
+                            400: '#688BC7',
+                            500: '#3B64B0',
+                            600: '#1D438A',
+                            700: '#143069',
+                            800: '#0E2452',
+                            900: '#0A1D4E', // Royal Sapphire Navy
+                            950: '#050F2B',
+                        },
+                        silver: {
+                            100: '#F8FAFC',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                        }
+                    },
+                    fontFamily: { 
+                        sans: ['Prompt', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: radial-gradient(circle at top, #F4F7FB 0%, #E2E8F0 100%);
+            color: #0A1D4E; 
+            min-height: 100vh; 
+        }
+        .royal-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1.5px solid #C8D6EB;
+            box-shadow: 0 10px 30px -10px rgba(10, 29, 78, 0.1);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start p-4 md:p-8 pb-20">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-2xl space-y-6">
+        
+        <!-- Header Nav -->
+        <div class="border-b border-royal-200 pb-4 flex items-center justify-between">
+            <div class="space-y-1">
+                <a href="home.html" class="inline-flex items-center space-x-1 text-xs font-bold text-royal-900 bg-royal-100 hover:bg-royal-200 px-4 py-2 rounded-xl transition border border-royal-200 shadow-sm mb-2">
+                    <span>← กลับสู่หน้าหลักสถาบัน</span>
+                </a>
+                <h1 class="font-serif text-xl md:text-2xl font-extrabold text-royal-900 tracking-wide">📚 Learnify (ศูนย์การเรียนรู้)</h1>
+            </div>
+            <!-- แสดงยอดเงินบัญชีปัจจุบัน -->
+            <div class="text-right bg-white/90 px-3 py-2 rounded-2xl border border-royal-200 shadow-sm shrink-0">
+                <span class="text-[10px] text-silver-500 block whitespace-nowrap">เงินในบัญชีปัจจุบัน</span>
+                <span id="user-silver-display" class="text-xs font-extrabold text-royal-900">0 Silver</span>
+            </div>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="grid grid-cols-2 gap-2 bg-royal-100 p-1.5 rounded-2xl text-center border border-royal-200">
+            <button id="tab-general-btn" onclick="switchTab('general')" class="py-2.5 rounded-xl text-xs font-bold bg-royal-900 text-white shadow-sm transition">General Skill (สกิลทั่วไป)</button>
+            <button id="tab-uni-btn" onclick="switchTab('university')" class="py-2.5 rounded-xl text-xs font-medium text-royal-900 hover:text-royal-600 transition">University Skill (มหาวิทยาลัย)</button>
+        </div>
+
+        <!-- Section 1: General Skill View -->
+        <div id="view-general" class="space-y-4">
+            <div class="royal-card p-4 rounded-3xl space-y-3">
+                <h2 class="text-sm font-bold text-royal-900 font-serif">✨ สกิลทั่วไป</h2>
+                <div id="general-skills-container" class="space-y-3">
+                    <p class="text-center text-xs text-silver-500 py-6">ขณะนี้ยังไม่มีข้อมูล</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: University Skill View -->
+        <div id="view-university" class="hidden space-y-4">
+            <!-- คณะที่กำลังศึกษาอยู่ -->
+            <div class="royal-card p-5 rounded-3xl border-2 border-royal-300 shadow-md space-y-3.5">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-royal-900 uppercase tracking-wider font-serif">🎓 สถานะการศึกษาปัจจุบัน</h2>
+                    <span id="uni-status-badge" class="text-[10px] font-bold px-3 py-1 rounded-full bg-royal-100 text-royal-900 shadow-sm border border-royal-200">ยังไม่ได้สมัครเรียน</span>
+                </div>
+                <div id="current-enrollment-box" class="space-y-2">
+                    <p class="text-xs text-silver-500 text-center py-4">ขณะนี้ยังไม่มีข้อมูล</p>
+                </div>
+            </div>
+
+            <!-- รายชื่อคณะทั้งหมด -->
+            <div class="royal-card p-4 sm:p-5 rounded-3xl space-y-3.5">
+                <h3 class="text-sm font-bold text-royal-900 font-serif">🏛️ คณะและหลักสูตรสถาบันทั้งหมด</h3>
+                <div id="university-skills-container" class="space-y-3">
+                    <p class="text-center text-xs text-silver-500 py-6">ขณะนี้ยังไม่มีข้อมูล</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal แจ้งเตือน -->
+    <div id="custom-modal" class="fixed inset-0 bg-royal-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border-2 border-royal-200 max-w-sm w-full p-6 text-center transform transition-all scale-95 opacity-0 duration-200" id="modal-box">
+            <div id="modal-icon" class="w-16 h-16 bg-royal-100 text-royal-900 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner border border-royal-200">⚜️</div>
+            <h3 id="modal-title" class="text-lg font-bold text-royal-900 mb-2 font-serif">แจ้งเตือนสถาบัน</h3>
+            <p id="modal-message" class="text-sm text-gray-600 mb-6">ข้อความแจ้งเตือน...</p>
+            <button onclick="closeModal()" class="bg-royal-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-royal-800 transition w-full shadow-md">รับทราบ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+        let currentUserProfile = null;
+        let activeBankAccount = null;
+        let catalogsData = [];
+        let currentEnrollment = null;
+
+        function showModal(title, message, icon = '⚜️') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerText = icon;
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        function switchTab(tab) {
+            const genBtn = document.getElementById('tab-general-btn');
+            const uniBtn = document.getElementById('tab-uni-btn');
+            const genView = document.getElementById('view-general');
+            const uniView = document.getElementById('view-university');
+
+            if (tab === 'general') {
+                genBtn.className = "py-2.5 rounded-xl text-xs font-bold bg-royal-900 text-white shadow-sm transition";
+                uniBtn.className = "py-2.5 rounded-xl text-xs font-medium text-royal-900 hover:text-royal-600 transition";
+                genView.classList.remove('hidden');
+                uniView.classList.add('hidden');
+            } else {
+                uniBtn.className = "py-2.5 rounded-xl text-xs font-bold bg-royal-900 text-white shadow-sm transition";
+                genBtn.className = "py-2.5 rounded-xl text-xs font-medium text-royal-900 hover:text-royal-600 transition";
+                uniView.classList.remove('hidden');
+                genView.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = 'index.html'; return; }
+            currentUserId = session.user.id;
+
+            await loadUserData();
+            await loadActiveAccount();
+            await loadCatalogs();
+            await loadUserEnrollment();
+        });
+
+        async function loadUserData() {
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', currentUserId).single();
+            if (profile) currentUserProfile = profile;
+        }
+
+        async function loadActiveAccount() {
+            const activeAccNo = sessionStorage.getItem('active_bank_acc');
+            let query = supabase.from('bank_accounts').select('*').eq('user_id', currentUserId);
+            
+            if (activeAccNo) {
+                query = query.eq('account_number', activeAccNo);
+            }
+
+            const { data } = await query.limit(1);
+            if (data && data.length > 0) {
+                activeBankAccount = data[0];
+                document.getElementById('user-silver-display').innerText = Number(activeBankAccount.silver).toLocaleString() + ' Silver';
+            } else {
+                const { data: fallback } = await supabase.from('bank_accounts').select('*').eq('user_id', currentUserId).order('created_at', { ascending: true }).limit(1);
+                if (fallback && fallback.length > 0) {
+                    activeBankAccount = fallback[0];
+                    document.getElementById('user-silver-display').innerText = Number(activeBankAccount.silver).toLocaleString() + ' Silver';
+                } else {
+                    document.getElementById('user-silver-display').innerText = '0 Silver';
+                }
+            }
+        }
+
+        async function loadCatalogs() {
+            const { data: catalog, error } = await supabase.from('skills_catalog').select('*').order('created_at', { ascending: true });
+            if (error) { console.error(error); return; }
+            catalogsData = catalog || [];
+
+            await renderGeneralSkills(catalogsData.filter(c => c.category === 'general'));
+            await renderUniversitySkills(catalogsData.filter(c => c.category === 'university'));
+        }
+
+        async function loadUserEnrollment() {
+            const { data, error } = await supabase
+                .from('user_university_enrollments')
+                .select('*, skills_catalog(*)')
+                .eq('user_id', currentUserId)
+                .eq('status', 'studying')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (!error && data && data.length > 0) {
+                currentEnrollment = data[0];
+            } else {
+                currentEnrollment = null;
+            }
+            renderCurrentEnrollmentBox();
+        }
+
+        async function renderGeneralSkills(skills) {
+            const container = document.getElementById('general-skills-container');
+            container.innerHTML = '';
+
+            if (!skills || skills.length === 0) {
+                container.innerHTML = '<p class="text-center text-xs text-silver-500 py-6">ขณะนี้ยังไม่มีข้อมูล</p>';
+                return;
+            }
+
+            skills.forEach(s => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-royal-200 shadow-sm flex items-center justify-between gap-3 hover:border-royal-400 transition";
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <h4 class="font-bold text-xs text-royal-900">📖 ${s.title}</h4>
+                        <p class="text-[10px] text-silver-500">ใช้พลังงาน: <span class="font-semibold text-royal-900">⚡ ${s.cost_energy}</span> | ค่าเรียน: <span class="font-semibold text-royal-900">${Number(s.cost_silver).toLocaleString()} Silver</span></p>
+                        <p class="text-[10px] text-royal-700 font-medium">รับแต้มสกิล: +${s.reward_points} แต้ม (${s.exclusive_skill_name || 'สกิลทั่วไป'})</p>
+                    </div>
+                    <button onclick="studyGeneralSkill('${s.id}', '${s.exclusive_skill_name || s.title}', ${s.cost_silver}, ${s.cost_energy}, ${s.reward_points})" class="bg-royal-900 hover:bg-royal-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm shrink-0">
+                        เข้าเรียน
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function studyGeneralSkill(skillId, skillName, costSilver, costEnergy, rewardPoints) {
+            if (!currentUserProfile) return;
+
+            const currentEnergy = currentUserProfile.energy !== undefined ? currentUserProfile.energy : 100;
+
+            if (currentEnergy < costEnergy) {
+                showModal("พลังงานไม่พอ", `คุณมีพลังงานเหลือ ${currentEnergy} หน่วย แต่ต้องใช้ ${costEnergy} หน่วย`, "⚡");
+                return;
+            }
+
+            if (!activeBankAccount || Number(activeBankAccount.silver) < costSilver) {
+                showModal("เงินไม่พอ", `คุณมีเงิน Silver ไม่เพียงพอสำหรับค่าเรียนนี้ (ต้องการ ${Number(costSilver).toLocaleString()} Silver)`, "💰");
+                return;
+            }
+
+            const newSilver = Number(activeBankAccount.silver) - Number(costSilver);
+            const newEnergy = currentEnergy - Number(costEnergy);
+
+            await supabase.from('bank_accounts').update({ silver: newSilver }).eq('id', activeBankAccount.id);
+            await supabase.from('profiles').update({ energy: newEnergy }).eq('id', currentUserId);
+
+            activeBankAccount.silver = newSilver;
+            currentUserProfile.energy = newEnergy;
+            document.getElementById('user-silver-display').innerText = newSilver.toLocaleString() + ' Silver';
+
+            await addSkillPoints(skillName, rewardPoints);
+
+            showModal("เรียนสำเร็จ", `คุณได้เรียน ${skillName} เรียบร้อยแล้ว ได้รับแต้มสกิล +${rewardPoints} แต้ม`, "⚜️");
+        }
+
+        async function addSkillPoints(skillName, rewardPoints) {
+            const { data: existingSkill } = await supabase.from('user_skills').select('*').eq('user_id', currentUserId).eq('skill_name', skillName).maybeSingle();
+
+            if (existingSkill) {
+                let newPoints = existingSkill.points + rewardPoints;
+                let newLevel = existingSkill.level;
+                let reqPoints = 300 + (newLevel - 1) * 200;
+                while (newPoints >= reqPoints) {
+                    newPoints -= reqPoints;
+                    newLevel += 1;
+                    reqPoints = 300 + (newLevel - 1) * 200;
+                }
+                await supabase.from('user_skills').update({ points: newPoints, level: newLevel }).eq('id', existingSkill.id);
+            } else {
+                await supabase.from('user_skills').insert([{ user_id: currentUserId, skill_name: skillName, points: rewardPoints, level: 1 }]);
+            }
+        }
+
+        async function renderUniversitySkills(skills) {
+            const container = document.getElementById('university-skills-container');
+            container.innerHTML = '';
+
+            if (!skills || skills.length === 0) {
+                container.innerHTML = '<p class="text-center text-xs text-silver-500 py-6">ขณะนี้ยังไม่มีข้อมูล</p>';
+                return;
+            }
+
+            skills.forEach(s => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 sm:p-4.5 rounded-2xl border border-royal-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-royal-400 transition";
+                card.innerHTML = `
+                    <div class="space-y-1.5">
+                        <h4 class="font-bold text-xs sm:text-sm text-royal-950 flex items-center space-x-1.5 font-serif">
+                            <span>🏛️</span>
+                            <span>${s.title}</span>
+                        </h4>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-600">
+                            <span>ค่าเทอม/คาบ: <strong class="text-royal-900">${Number(s.cost_silver).toLocaleString()} Silver</strong></span>
+                            <span>⚡ พลังงาน: <strong class="text-royal-900">${s.cost_energy}</strong></span>
+                        </div>
+                        <p class="text-[10px] text-royal-700 font-medium bg-royal-50 px-2.5 py-1 rounded-lg inline-block border border-royal-100">
+                            🎯 เป้าหมายจบหลักสูตร: ${s.target_sessions} คาบ | 🎓 สกิลที่ได้รับ: ${s.exclusive_skill_name}
+                        </p>
+                    </div>
+                    <button onclick="enrollUniversity('${s.id}')" class="bg-royal-900 hover:bg-royal-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-sm w-full sm:w-auto shrink-0">
+                        สมัครเรียน
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderCurrentEnrollmentBox() {
+            const box = document.getElementById('current-enrollment-box');
+            const badge = document.getElementById('uni-status-badge');
+
+            if (!currentEnrollment) {
+                badge.innerText = "ยังไม่ได้สมัครเรียน";
+                badge.className = "text-[10px] font-bold px-3 py-1 rounded-full bg-royal-100 text-royal-900 shadow-sm border border-royal-200";
+                box.innerHTML = `<p class="text-xs text-silver-500 text-center py-4">ขณะนี้ยังไม่ได้สมัครเรียนหลักสูตรใดๆ</p>`;
+                return;
+            }
+
+            badge.innerText = "กำลังศึกษาอยู่";
+            badge.className = "text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 shadow-sm border border-emerald-200";
+
+            const catalog = currentEnrollment.skills_catalog;
+            const progressPercent = Math.min(100, Math.round((currentEnrollment.current_sessions / catalog.target_sessions) * 100));
+
+            box.innerHTML = `
+                <div class="bg-royal-50 p-4 rounded-2xl border border-royal-200 space-y-3.5">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-sm text-royal-950 flex items-center space-x-1.5 font-serif">
+                            <span>🏛️</span>
+                            <span>${catalog.title}</span>
+                        </h3>
+                        <p class="text-[11px] text-gray-600">สกิลที่กำลังพัฒนา: <span class="font-semibold text-royal-900">${catalog.exclusive_skill_name}</span></p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-bold text-gray-600">
+                            <span>ความคืบหน้าคาบเรียน</span>
+                            <span class="text-royal-900">${currentEnrollment.current_sessions} / ${catalog.target_sessions} คาบ (${progressPercent}%)</span>
+                        </div>
+                        <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-royal-200">
+                            <div class="bg-royal-900 h-full rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button onclick="studyUniversitySession()" class="bg-royal-900 hover:bg-royal-800 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-sm">
+                            📚 เข้าเรียนคาบนี้
+                        </button>
+                        <button onclick="dropUniversity()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs py-2.5 rounded-xl transition shadow-sm">
+                            🚪 ลาออก (Drop)
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function enrollUniversity(catalogId) {
+            if (currentEnrollment) {
+                showModal("มีหลักสูตรที่กำลังเรียนอยู่", "คุณต้องเรียนให้จบหรือกดลาออกจากหลักสูตรเดิมก่อนจึงจะสมัครหลักสูตรใหม่ได้", "⚠️");
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('user_university_enrollments')
+                .insert([{ user_id: currentUserId, catalog_id: catalogId, current_sessions: 0, status: 'studying' }])
+                .select('*, skills_catalog(*)')
+                .single();
+
+            if (error) {
+                showModal("เกิดข้อผิดพลาด", error.message, "❌");
+                return;
+            }
+
+            currentEnrollment = data;
+            renderCurrentEnrollmentBox();
+            showModal("ลงทะเบียนสำเร็จ", `คุณได้สมัครเข้าศึกษาต่อในหลักสูตร ${data.skills_catalog.title} เรียบร้อยแล้ว`, "⚜️");
+        }
+
+        async function studyUniversitySession() {
+            if (!currentEnrollment || !currentUserProfile || !activeBankAccount) return;
+
+            const catalog = currentEnrollment.skills_catalog;
+            const currentEnergy = currentUserProfile.energy !== undefined ? currentUserProfile.energy : 100;
+
+            if (currentEnergy < catalog.cost_energy) {
+                showModal("พลังงานไม่พอ", `พลังงานเหลือ ${currentEnergy} หน่วย แต่ต้องใช้ ${catalog.cost_energy} หน่วย`, "⚡");
+                return;
+            }
+
+            if (Number(activeBankAccount.silver) < catalog.cost_silver) {
+                showModal("เงินไม่พอ", `เงิน Silver ไม่พอสำหรับจ่ายค่าเทอมคาบนี้ (ต้องการ ${Number(catalog.cost_silver).toLocaleString()} Silver)`, "💰");
+                return;
+            }
+
+            const newSilver = Number(activeBankAccount.silver) - Number(catalog.cost_silver);
+            const newEnergy = currentEnergy - Number(catalog.cost_energy);
+
+            await supabase.from('bank_accounts').update({ silver: newSilver }).eq('id', activeBankAccount.id);
+            await supabase.from('profiles').update({ energy: newEnergy }).eq('id', currentUserId);
+
+            activeBankAccount.silver = newSilver;
+            currentUserProfile.energy = newEnergy;
+            document.getElementById('user-silver-display').innerText = newSilver.toLocaleString() + ' Silver';
+
+            const nextSessions = currentEnrollment.current_sessions + 1;
+            
+            if (nextSessions >= catalog.target_sessions) {
+                const { error: updateErr } = await supabase
+                    .from('user_university_enrollments')
+                    .update({ current_sessions: nextSessions, status: 'graduated' })
+                    .eq('id', currentEnrollment.id);
+
+                if (updateErr) {
+                    showModal("เกิดข้อผิดพลาด", updateErr.message, "❌");
+                    return;
+                }
+                
+                await addSkillPoints(catalog.exclusive_skill_name, catalog.reward_points * 2);
+
+                const certTitle = `วุฒิการศึกษา ${catalog.title}`;
+                const { data: existingCert } = await supabase
+                    .from('user_certificates')
+                    .select('id')
+                    .eq('user_id', currentUserId)
+                    .eq('title', certTitle)
+                    .maybeSingle();
+
+                if (!existingCert) {
+                    await supabase.from('user_certificates').insert([{
+                        user_id: currentUserId,
+                        title: certTitle,
+                        degree_level: 'ใบประกาศนียบัตรหลักสูตร',
+                        is_public: false
+                    }]);
+                }
+                
+                showModal("ยินดีด้วย! จบหลักสูตรแล้ว", `คุณเรียนจบหลักสูตร ${catalog.title} สำเร็จ! ได้รับใบประกาศนียบัตรและโบนัสแต้มสกิลเรียบร้อยแล้ว`, "⚜️");
+                
+                currentEnrollment = null;
+                renderCurrentEnrollmentBox();
+            } else {
+                const { error: updateErr } = await supabase
+                    .from('user_university_enrollments')
+                    .update({ current_sessions: nextSessions })
+                    .eq('id', currentEnrollment.id);
+
+                if (updateErr) {
+                    showModal("เกิดข้อผิดพลาด", updateErr.message, "❌");
+                    return;
+                }
+
+                currentEnrollment.current_sessions = nextSessions;
+                renderCurrentEnrollmentBox();
+                showModal("เข้าเรียนสำเร็จ", `เข้าเรียนคาบที่ ${nextSessions}/${catalog.target_sessions} เรียบร้อยแล้ว ได้รับแต้มสกิล +${catalog.reward_points} แต้ม`, "⚜️");
+                await addSkillPoints(catalog.exclusive_skill_name, catalog.reward_points);
+            }
+        }
+
+        async function dropUniversity() {
+            if (!currentEnrollment) return;
+
+            await supabase.from('user_university_enrollments').update({ status: 'dropped' }).eq('id', currentEnrollment.id);
+            showModal("ลาออกสำเร็จ", "คุณได้ทำการลาออกจากหลักสูตรเรียบร้อยแล้ว", "🗑️");
+            currentEnrollment = null;
+            renderCurrentEnrollmentBox();
+        }
+    </script>
+</body>
+</html>
