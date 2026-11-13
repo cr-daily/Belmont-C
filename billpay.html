@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belmont C. - Bill Pay</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A1D4E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dp6k1rwj/image/upload/v1794483770/file_00000000a1cc82118c32b6b1b3e0fa76.png">
+
+    <!-- Google Fonts & Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- นำเข้าไฟล์ตั้งค่ากลาง -->
+    <script src="supabase-config.js"></script>
+    <script src="cloudinary-config.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        royal: {
+                            50: '#F4F7FB',
+                            100: '#E8EEF7',
+                            200: '#C8D6EB',
+                            300: '#9CB4DB',
+                            400: '#688BC7',
+                            500: '#3B64B0',
+                            600: '#1D438A',
+                            700: '#143069',
+                            800: '#0E2452',
+                            900: '#0A1D4E', // Royal Sapphire Navy
+                            950: '#050F2B',
+                        },
+                        silver: {
+                            100: '#F8FAFC',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                        }
+                    },
+                    fontFamily: { 
+                        sans: ['Prompt', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background: radial-gradient(circle at top, #F4F7FB 0%, #E2E8F0 100%);
+            color: #0A1D4E; 
+            min-height: 100vh; 
+        }
+        .royal-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1.5px solid #C8D6EB;
+            box-shadow: 0 10px 30px -10px rgba(10, 29, 78, 0.1);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start p-4 md:p-8 pb-20">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-2xl space-y-6">
+        
+        <!-- Header Nav -->
+        <div class="border-b border-royal-200 pb-4 flex items-center justify-between">
+            <div class="space-y-1">
+                <a href="home.html" class="inline-flex items-center space-x-1 text-xs font-bold text-royal-900 bg-royal-100 hover:bg-royal-200 px-4 py-2 rounded-xl transition border border-royal-200 shadow-sm mb-2">
+                    <span>← กลับสู่หน้าหลักสถาบัน</span>
+                </a>
+                <h1 class="font-serif text-xl md:text-2xl font-extrabold text-royal-900 tracking-wide whitespace-nowrap">📜 Bill Pay (ชำระบิล & ค่าใช้จ่าย)</h1>
+            </div>
+            <!-- แสดงยอดเงินบัญชีปัจจุบัน -->
+            <div class="text-right bg-white/90 px-3 py-2 rounded-2xl border border-royal-200 shadow-sm shrink-0">
+                <span class="text-[10px] text-silver-500 block whitespace-nowrap">เงินในบัญชีปัจจุบัน</span>
+                <span id="user-silver-display" class="text-xs font-extrabold text-royal-900">0 Silver</span>
+            </div>
+        </div>
+
+        <!-- Section: รายการบิลค้างชำระ -->
+        <div class="space-y-4">
+            <div class="royal-card p-4 rounded-3xl space-y-2">
+                <h2 class="text-sm font-bold text-royal-900 font-serif">📋 รายการบิลและค่าบำรุงรักษาประจำงวด</h2>
+                <p class="text-[11px] text-silver-500">ชำระค่าบำรุงรักษาอสังหาริมทรัพย์และค่าใช้จ่ายอื่นๆ เพื่อรักษาสิทธิ์การใช้งาน</p>
+            </div>
+
+            <div id="bills-container" class="space-y-3">
+                <div class="royal-card p-6 rounded-3xl text-center">
+                    <p class="text-xs text-silver-500 py-6">กำลังตรวจสอบรายการบิล...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal แจ้งเตือน -->
+    <div id="custom-modal" class="fixed inset-0 bg-royal-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border-2 border-royal-200 max-w-sm w-full p-6 text-center transform transition-all scale-95 opacity-0 duration-200" id="modal-box">
+            <div id="modal-icon" class="w-16 h-16 bg-royal-100 text-royal-900 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner border border-royal-200">⚜️</div>
+            <h3 id="modal-title" class="text-lg font-bold text-royal-900 mb-2 font-serif">แจ้งเตือนสถาบัน</h3>
+            <p id="modal-message" class="text-sm text-gray-600 mb-6">ข้อความแจ้งเตือน...</p>
+            <button onclick="closeModal()" class="bg-royal-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-royal-800 transition w-full shadow-md">รับทราบ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+        let activeBankAccount = null;
+        let myBills = [];
+
+        function showModal(title, message, icon = '⚜️') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerText = icon;
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+            setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const box = document.getElementById('modal-box');
+            box.classList.remove('scale-100', 'opacity-100'); box.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { window.location.href = 'index.html'; return; }
+            currentUserId = session.user.id;
+
+            await loadActiveAccount();
+            await loadBills();
+        });
+
+        async function loadActiveAccount() {
+            const activeAccNo = sessionStorage.getItem('active_bank_acc');
+            let query = supabase.from('bank_accounts').select('*').eq('user_id', currentUserId);
+            
+            if (activeAccNo) {
+                query = query.eq('account_number', activeAccNo);
+            }
+
+            const { data } = await query.limit(1);
+            if (data && data.length > 0) {
+                activeBankAccount = data[0];
+                document.getElementById('user-silver-display').innerText = Number(activeBankAccount.silver).toLocaleString() + ' Silver';
+            } else {
+                const { data: fallback } = await supabase.from('bank_accounts').select('*').eq('user_id', currentUserId).order('created_at', { ascending: true }).limit(1);
+                if (fallback && fallback.length > 0) {
+                    activeBankAccount = fallback[0];
+                    document.getElementById('user-silver-display').innerText = Number(activeBankAccount.silver).toLocaleString() + ' Silver';
+                } else {
+                    document.getElementById('user-silver-display').innerText = '0 Silver';
+                }
+            }
+        }
+
+        async function loadBills() {
+            const { data: bills, error } = await supabase
+                .from('user_bills')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .order('created_at', { ascending: false });
+
+            const container = document.getElementById('bills-container');
+            container.innerHTML = '';
+
+            if (error || !bills || bills.length === 0) {
+                container.innerHTML = `
+                    <div class="royal-card p-6 rounded-3xl text-center space-y-2">
+                        <span class="text-3xl">✨</span>
+                        <h3 class="font-bold text-xs text-royal-900 font-serif">ไม่มีบิลค้างชำระในขณะนี้</h3>
+                        <p class="text-[11px] text-silver-500">บัญชีค่าใช้จ่ายของคุณเคลียร์เรียบร้อยดี</p>
+                    </div>
+                `;
+                return;
+            }
+
+            myBills = bills;
+
+            container.innerHTML = bills.map(bill => {
+                const isPaid = bill.status === 'paid';
+                return `
+                    <div class="royal-card p-4 sm:p-5 rounded-3xl flex items-center justify-between gap-3 shadow-sm">
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                ${isPaid ? 'ชำระแล้ว' : 'ค้างชำระ'}
+                            </span>
+                            <h3 class="font-bold text-xs sm:text-sm text-royal-900 font-serif mt-1">${bill.title || 'ค่าใช้จ่ายประจำงวด'}</h3>
+                            <p class="text-[11px] text-silver-500">ยอดชำระ: <strong class="text-royal-900">${Number(bill.amount).toLocaleString()} Silver</strong></p>
+                        </div>
+                        <div>
+                            ${isPaid ? `
+                                <button disabled class="bg-silver-200 text-silver-500 text-xs font-bold px-4 py-2 rounded-xl cursor-not-allowed">
+                                    ชำระแล้ว
+                                </button>
+                            ` : `
+                                <button onclick="payBill('${bill.id}', ${bill.amount}, '${bill.title || 'บิล'}')" class="bg-royal-900 hover:bg-royal-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                                    ชำระเงิน
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function payBill(billId, amount, billTitle) {
+            if (!activeBankAccount) {
+                showModal("ข้อผิดพลาด", "ไม่พบบัญชีธนาคารสำหรับชำระเงิน", "❌");
+                return;
+            }
+
+            if (Number(activeBankAccount.silver) < amount) {
+                showModal("เงินไม่พอ", `บิลนี้มียอด ${Number(amount).toLocaleString()} Silver แต่คุณมีเงินในบัญชีเพียง ${Number(activeBankAccount.silver).toLocaleString()} Silver`, "❌");
+                return;
+            }
+
+            showModal("กำลังดำเนินการ", "กำลังหักเงินชำระบิล...", "⏳");
+
+            const newSilver = Number(activeBankAccount.silver) - amount;
+            await supabase.from('bank_accounts').update({ silver: newSilver }).eq('id', activeBankAccount.id);
+            activeBankAccount.silver = newSilver;
+
+            const { error } = await supabase.from('user_bills').update({ status: 'paid' }).eq('id', billId);
+
+            closeModal();
+            if (!error) {
+                document.getElementById('user-silver-display').innerText = newSilver.toLocaleString() + ' Silver';
+                showModal("ชำระบิลสำเร็จ", `ชำระค่า "${billTitle}" เรียบร้อยแล้ว`, "⚜️");
+                await loadBills();
+            } else {
+                showModal("เกิดข้อผิดพลาด", error.message, "❌");
+            }
+        }
+    </script>
+</body>
+</html>
